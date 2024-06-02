@@ -16,7 +16,6 @@ MUL_RANGE = [2, 30]
 DIV_RANGE = [20, 900]
 
 
-
 def generate_add_sub_nums(dp=0) -> Union[List[int], List[float]]:
     if dp == 0:
         num1, num2 = random.randint(*ADD_RANGE), random.randint(*ADD_RANGE)
@@ -49,7 +48,7 @@ def generate_div_nums(dp=0) -> List[int]:
     # test really random division problems too
     # However, death mode is an inversion bc of irrational numbers
     if dp > 0:
-        fac_1, fac_2 = generate_mul_nums(dp = dp)
+        fac_1, fac_2 = generate_mul_nums(dp=dp)
         num1 = round(fac_1 * fac_2, 2*dp)
         num2 = random.choice([fac_1, fac_2])
     else:
@@ -68,8 +67,12 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-d', "--death", action="store_true")
     parser.add_argument("-t", "--times", action="store_true")
+    parser.add_argument("-n", "--num")
     death_mode = parser.parse_args().death
     times_only = parser.parse_args().times
+    num_questions = 20
+    if parser.parse_args().num:
+        num_questions = int(parser.parse_args().num)
 
     if times_only:
         # only practice times tables
@@ -85,7 +88,6 @@ def main():
     # Death mode has calcs with 2 dp
     dp = 2 if death_mode else 0
     # game loop
-    num_questions = 20
     questions_remaining = num_questions
     num_correct = 0
     total_time = 0.
@@ -109,7 +111,8 @@ def main():
         true_answer = round(true_answer, round_dp)
         # timing for user answer
         start_time = time.time()
-        user_answer = input(f"Q{current_q_num} of {num_questions}: {expression.replace('*', 'x')} = ")
+        user_answer = input(
+            f"Q{current_q_num} of {num_questions}: {expression.replace('*', 'x')} = ")
         end_time = time.time()
         time_delta = end_time - start_time
         # handle input
@@ -145,7 +148,7 @@ def main():
     accuracy = num_correct / num_questions
     average_time = total_time / num_questions
     print(f"{num_correct} / {num_questions} correct ({accuracy*100:.2f}%)"
-            f" in {total_time:.2f} [s]")
+          f" in {total_time:.2f} [s]")
     print(f"Average time: {average_time:.2f} [s]")
 
 
