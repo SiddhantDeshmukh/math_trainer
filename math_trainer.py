@@ -11,28 +11,23 @@ import time
 import argparse
 
 
-ADD_RANGE = [10, 900]
-MUL_RANGE = [2, 30]
-DIV_RANGE = [20, 900]
-
-
-def generate_add_sub_nums(dp=0) -> Union[List[int], List[float]]:
+def generate_add_sub_nums(add_range: List[int], dp=0) -> Union[List[int], List[float]]:
     if dp == 0:
-        num1, num2 = random.randint(*ADD_RANGE), random.randint(*ADD_RANGE)
+        num1, num2 = random.randint(*add_range), random.randint(*add_range)
         return num1, num2
     else:
-        num1 = round(random.uniform(*ADD_RANGE), dp)
-        num2 = round(random.uniform(*ADD_RANGE), dp)
+        num1 = round(random.uniform(*add_range), dp)
+        num2 = round(random.uniform(*add_range), dp)
         return num1, num2
 
 
-def generate_mul_nums(dp=0) -> List[int]:
+def generate_mul_nums(mul_range: List[int], dp=0) -> List[int]:
     # Generate two numbers for timetables
     if dp == 0:
-        num1, num2 = random.randint(*MUL_RANGE), random.randint(*MUL_RANGE)
+        num1, num2 = random.randint(*mul_range), random.randint(*mul_range)
     else:
-        num1 = round(random.uniform(*MUL_RANGE), dp)
-        num2 = round(random.uniform(*MUL_RANGE), dp)
+        num1 = round(random.uniform(*mul_range), dp)
+        num2 = round(random.uniform(*mul_range), dp)
     return num1, num2
 
 
@@ -42,7 +37,7 @@ def factors(n: int) -> List[int]:
                                       if n % i == 0))))
 
 
-def generate_div_nums(dp=0) -> List[int]:
+def generate_div_nums(div_range: List[int], dp=0) -> List[int]:
     # Generate one number and then one of its factors
     # This isn't an inversion of the multiplication range since I want to
     # test really random division problems too
@@ -52,10 +47,10 @@ def generate_div_nums(dp=0) -> List[int]:
         num1 = round(fac_1 * fac_2, 2*dp)
         num2 = random.choice([fac_1, fac_2])
     else:
-        num1 = random.randint(*DIV_RANGE)
+        num1 = random.randint(*div_range)
         while len(factors(num1)) <= 2:
             # Avoid primes
-            num1 = random.randint(*DIV_RANGE)
+            num1 = random.randint(*div_range)
         num2 = 1
         while num2 == 1 or num2 == num1:
             # No easy questions
@@ -67,18 +62,29 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-d', "--death", action="store_true")
     parser.add_argument("-t", "--times", action="store_true")
-    parser.add_argument("-n", "--num")
-    death_mode = parser.parse_args().death
-    times_only = parser.parse_args().times
-    num_questions = 20
-    if parser.parse_args().num:
-        num_questions = int(parser.parse_args().num)
+    parser.add_argument("-n", "--num", default=20)
+    parser.add_argument("-a", "--add_min", default=10)
+    parser.add_argument("-b", "--add_max", default=900)
+    parser.add_argument("-x", "--mul_min", default=2)
+    parser.add_argument("-y", "--mul_max", default=95)
+    parser.add_argument("-v", "--div_min", default=20)
+    parser.add_argument("-w", "--div_max", default=900)
+    args = parser.parse_args()
+    death_mode = args.death
+    times_only = args.times
+    add_range = [int(args.add_min), int(args.add_max)]
+    mul_range = [int(args.mul_min), int(args.mul_max)]
+    div_range = [int(args.div_min), int(args.div_max)]
+    print(f"Addition range: {add_range}")
+    print(f"Multiplication range: {mul_range}")
+    print(f"Division range: {div_range}")
+    num_questions = int(args.num)
 
     if times_only:
         # only practice times tables
         operators = {"*": op.mul}
     else:
-        # Generate random operation, much harder
+        # Generate random operation
         operators = {
             "+": op.add,
             "-": op.sub,
@@ -93,16 +99,17 @@ def main():
     total_time = 0.
     quit_strs = ["q", "quit"]
     func_chooser = {
-        "+": generate_add_sub_nums,
-        "-": generate_add_sub_nums,
-        "*": generate_mul_nums,
-        "/": generate_div_nums
+        "+": (generate_add_sub_nums, add_range),
+        "-": (generate_add_sub_nums, add_range),
+        "*": (generate_mul_nums, mul_range),
+        "/": (generate_div_nums, div_range)
     }
     while questions_remaining > 0:
         current_q_num = num_questions - questions_remaining + 1
         # generate random expression
         operation = random.choice(list(operators.keys()))
-        num1, num2 = func_chooser[operation](dp=dp)
+        func, num_range = func_chooser[operation]
+        num1, num2 = func(num_range, dp=dp)
         # yes yes eval is evil but I'm only using it locally
         expression = f"{num1} {operation} {num2}"
         true_answer = eval(expression)

@@ -1,0 +1,3 @@
+#!/bin/bash
+# Default basic mode with 100 questions for fun
+python math_trainer.py -n 100

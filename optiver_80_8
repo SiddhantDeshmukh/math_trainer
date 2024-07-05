@@ -1,0 +1,4 @@
+#!/bin/bash
+# Run math trainer to emulate Optiver's 80-in-8 (death mode, 80 questions,
+# you have 8 minutes)
+python math_trainer.py -n 80 -d
