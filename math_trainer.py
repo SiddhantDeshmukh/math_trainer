@@ -5,13 +5,15 @@
 # Basically just a fun pasttime
 import random
 import operator as op
-from typing import List, Union
+from typing import List, Tuple, Union
 import functools
 import time
 import argparse
 
 
-def generate_add_sub_nums(add_range: List[int], dp=0) -> Union[List[int], List[float]]:
+def generate_add_sub_nums(
+    add_range: List[int], dp=0
+) -> Union[Tuple[int, int], Tuple[float, float]]:
     if dp == 0:
         num1, num2 = random.randint(*add_range), random.randint(*add_range)
         return num1, num2
@@ -21,7 +23,9 @@ def generate_add_sub_nums(add_range: List[int], dp=0) -> Union[List[int], List[f
         return num1, num2
 
 
-def generate_mul_nums(mul_range: List[int], dp=0) -> List[int]:
+def generate_mul_nums(
+    mul_range: List[int], dp=0
+) -> Union[Tuple[int, int], Tuple[float, float]]:
     # Generate two numbers for timetables
     if dp == 0:
         num1, num2 = random.randint(*mul_range), random.randint(*mul_range)
@@ -32,19 +36,26 @@ def generate_mul_nums(mul_range: List[int], dp=0) -> List[int]:
 
 
 def factors(n: int) -> List[int]:
-    return list(set(functools.reduce(list.__add__,
-                                     ([i, n // i] for i in range(1, int(n**0.5) + 1)
-                                      if n % i == 0))))
+    return list(
+        set(
+            functools.reduce(
+                list.__add__,
+                ([i, n // i] for i in range(1, int(n**0.5) + 1) if n % i == 0),
+            )
+        )
+    )
 
 
-def generate_div_nums(div_range: List[int], dp=0) -> List[int]:
+def generate_div_nums(
+    div_range: List[int], dp=0
+) -> Union[Tuple[int, int], Tuple[float, float]]:
     # Generate one number and then one of its factors
     # This isn't an inversion of the multiplication range since I want to
     # test really random division problems too
     # However, death mode is an inversion bc of irrational numbers
     if dp > 0:
-        fac_1, fac_2 = generate_mul_nums(dp=dp)
-        num1 = round(fac_1 * fac_2, 2*dp)
+        fac_1, fac_2 = generate_mul_nums([2, 95], dp=dp)
+        num1 = round(fac_1 * fac_2, 2 * dp)
         num2 = random.choice([fac_1, fac_2])
     else:
         num1 = random.randint(*div_range)
@@ -60,7 +71,7 @@ def generate_div_nums(div_range: List[int], dp=0) -> List[int]:
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-d', "--death", action="store_true")
+    parser.add_argument("-d", "--death", action="store_true")
     parser.add_argument("-t", "--times", action="store_true")
     parser.add_argument("-n", "--num", default=20)
     parser.add_argument("-a", "--add_min", default=10)
@@ -85,24 +96,19 @@ def main():
         operators = {"*": op.mul}
     else:
         # Generate random operation
-        operators = {
-            "+": op.add,
-            "-": op.sub,
-            "*": op.mul,
-            "/": op.truediv
-        }
+        operators = {"+": op.add, "-": op.sub, "*": op.mul, "/": op.truediv}
     # Death mode has calcs with 2 dp
     dp = 2 if death_mode else 0
     # game loop
     questions_remaining = num_questions
     num_correct = 0
-    total_time = 0.
+    total_time = 0.0
     quit_strs = ["q", "quit"]
     func_chooser = {
         "+": (generate_add_sub_nums, add_range),
         "-": (generate_add_sub_nums, add_range),
         "*": (generate_mul_nums, mul_range),
-        "/": (generate_div_nums, div_range)
+        "/": (generate_div_nums, div_range),
     }
     while questions_remaining > 0:
         current_q_num = num_questions - questions_remaining + 1
@@ -114,12 +120,13 @@ def main():
         expression = f"{num1} {operation} {num2}"
         true_answer = eval(expression)
         # Need to round bc of floating point arithmetic
-        round_dp = dp*2 if operation == "*" else dp
+        round_dp = dp * 2 if operation == "*" else dp
         true_answer = round(true_answer, round_dp)
         # timing for user answer
         start_time = time.time()
         user_answer = input(
-            f"Q{current_q_num} of {num_questions}: {expression.replace('*', 'x')} = ")
+            f"Q{current_q_num} of {num_questions}: {expression.replace('*', 'x')} = "
+        )
         end_time = time.time()
         time_delta = end_time - start_time
         # handle input
@@ -127,8 +134,10 @@ def main():
             print("Coward!")
             accuracy = num_correct / num_questions
             average_time = total_time / num_questions
-            print(f"{num_correct} / {num_questions} correct ({accuracy*100:.2f}%)"
-                  f" in {total_time:.2f} [s]")
+            print(
+                f"{num_correct} / {num_questions} correct ({accuracy*100:.2f}%)"
+                f" in {total_time:.2f} [s]"
+            )
             print(f"Average time: {average_time:.2f} [s]")
             exit(0)
         else:
@@ -144,8 +153,7 @@ def main():
             # wrong
             if dp == 0:
                 true_answer = int(true_answer)
-            print(f"Wrong, actually is {true_answer} "
-                  f"({time_delta:.2f}) [s]")
+            print(f"Wrong, actually is {true_answer} " f"({time_delta:.2f}) [s]")
 
         questions_remaining -= 1
         total_time += time_delta
@@ -154,8 +162,10 @@ def main():
     print("All done, thanks for playing!")
     accuracy = num_correct / num_questions
     average_time = total_time / num_questions
-    print(f"{num_correct} / {num_questions} correct ({accuracy*100:.2f}%)"
-          f" in {total_time:.2f} [s]")
+    print(
+        f"{num_correct} / {num_questions} correct ({accuracy*100:.2f}%)"
+        f" in {total_time:.2f} [s]"
+    )
     print(f"Average time: {average_time:.2f} [s]")
 
 

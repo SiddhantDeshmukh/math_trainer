@@ -1,0 +1,3 @@
+#!/bin/bash
+# Run math trainer to just have basic multiplication tables up to 50
+python math_trainer.py -n 100 -t -x 2 -y 50
